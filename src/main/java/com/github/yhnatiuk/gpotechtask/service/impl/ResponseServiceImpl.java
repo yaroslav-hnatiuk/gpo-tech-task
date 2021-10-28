@@ -33,8 +33,9 @@ public class ResponseServiceImpl implements ResponseService {
     Response response = responseRepository.save(toDomain(responseDto));
     String prefix = responseDto.getData().substring(0, 8);
     String suffix = responseDto.getData().substring(responseDto.getData().length() - 10);
-    Command command = commandRepository.findAppropriateCommand(prefix, suffix);
-    if (nonNull(command)) {
+    List<Command> commands = commandRepository.findAppropriateCommand(prefix, suffix);
+    if (nonNull(commands) && !commands.isEmpty()) {
+      Command command = commands.get(0);
       command.setStatus(CommandStatus.LINKED);
       commandRepository.save(command);
     }

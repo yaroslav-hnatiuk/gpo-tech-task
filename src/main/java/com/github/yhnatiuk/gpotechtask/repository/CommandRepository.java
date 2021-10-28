@@ -2,6 +2,7 @@ package com.github.yhnatiuk.gpotechtask.repository;
 
 import com.github.yhnatiuk.gpotechtask.domain.Command;
 import java.time.LocalDateTime;
+import java.util.List;
 import javax.transaction.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -26,5 +27,5 @@ public interface CommandRepository extends CrudRepository<Command, Long> {
       @Param("expiration_date") LocalDateTime currentLocalDateTime);
 
   @Query(value = queryFindAppropriateCommand, nativeQuery = true)
-  Command findAppropriateCommand(@Param("prefix") String prefix, @Param("suffix") String suffix);
+  List<Command> findAppropriateCommand(@Param("prefix") String prefix, @Param("suffix") String suffix);
 }
