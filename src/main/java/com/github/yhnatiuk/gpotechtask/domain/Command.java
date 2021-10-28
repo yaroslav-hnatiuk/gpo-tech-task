@@ -9,10 +9,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.Size;
 
 @Entity(name = "command")
-@Table(name = "command", schema = "command")
+@Table(name = "command")
 public class Command {
 
   @Id

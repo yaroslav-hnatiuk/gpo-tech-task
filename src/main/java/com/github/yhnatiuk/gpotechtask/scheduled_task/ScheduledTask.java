@@ -11,14 +11,15 @@ import org.springframework.stereotype.Component;
 @EnableScheduling
 public class ScheduledTask {
 
-  private CommandRepository commandRepository;
+  private final CommandRepository commandRepository;
 
   public ScheduledTask(CommandRepository commandRepository) {
     this.commandRepository = commandRepository;
   }
 
-  @Scheduled(fixedRate = 300000)
-  private void checkCommandExpiration() {
+  @Scheduled(fixedRateString = "${spring.schedule.period}")
+  public void checkCommandExpiration() {
+    System.out.println("Scheduled task: " + LocalDateTime.now());
     commandRepository.setStatusFailedIfCommandWasExpired(LocalDateTime.now());
   }
 }

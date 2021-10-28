@@ -32,7 +32,7 @@ public class CommandServiceImpl implements CommandService {
   @Override
   public List<CommandDto> getAllCommands() {
     List<Command> allCommands = new ArrayList<>();
-        commandRepository.findAll().forEach(allCommands::add);
+    commandRepository.findAll().forEach(allCommands::add);
     return allCommands.stream()
         .map(this::toDto)
         .collect(Collectors.toList());

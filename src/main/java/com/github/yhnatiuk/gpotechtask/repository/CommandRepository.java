@@ -12,17 +12,18 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CommandRepository extends CrudRepository<Command, Long> {
 
-  String querySetStatusFailedIfCommandWasExpired = "UPDATE command.command "
+  String querySetStatusFailedIfCommandWasExpired = "UPDATE command "
       + "SET status = 'FAILED' "
-      + "WHERE expiration_time <= :current_date AND status = 'WAITING'";
+      + "WHERE expiration_time <= :expiration_date AND status = 'WAITING'";
 
-  String queryFindAppropriateCommand = "SELECT * FROM command.command "
+  String queryFindAppropriateCommand = "SELECT * FROM command "
       + "WHERE data LIKE concat(:prefix, '%', :suffix) AND status = 'WAITING'";
 
   @Modifying
   @Transactional
   @Query(value = querySetStatusFailedIfCommandWasExpired, nativeQuery = true)
-  void setStatusFailedIfCommandWasExpired(@Param("current_date") LocalDateTime currentLocalDateTime);
+  void setStatusFailedIfCommandWasExpired(
+      @Param("expiration_date") LocalDateTime currentLocalDateTime);
 
   @Query(value = queryFindAppropriateCommand, nativeQuery = true)
   Command findAppropriateCommand(@Param("prefix") String prefix, @Param("suffix") String suffix);

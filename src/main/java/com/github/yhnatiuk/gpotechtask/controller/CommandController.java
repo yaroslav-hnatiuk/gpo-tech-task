@@ -1,8 +1,8 @@
 package com.github.yhnatiuk.gpotechtask.controller;
 
+import com.github.yhnatiuk.gpotechtask.service.CommandService;
 import com.github.yhnatiuk.gpotechtask.service.ResponseService;
 import com.github.yhnatiuk.gpotechtask.service.dto.CommandDto;
-import com.github.yhnatiuk.gpotechtask.service.CommandService;
 import com.github.yhnatiuk.gpotechtask.service.dto.ResponseDto;
 import java.util.List;
 import javax.validation.Valid;
@@ -46,5 +46,12 @@ public class CommandController {
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(responseService.addResponse(responseDto));
+  }
+
+  @GetMapping(path = "/response")
+  public ResponseEntity<List<ResponseDto>> getAllResponses() {
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(responseService.getAllResponse());
   }
 }

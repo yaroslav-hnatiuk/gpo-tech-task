@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class GpoTechTaskApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(GpoTechTaskApplication.class, args);
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(GpoTechTaskApplication.class, args);
+  }
 
 }
