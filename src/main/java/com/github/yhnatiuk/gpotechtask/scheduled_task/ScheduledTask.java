@@ -19,7 +19,6 @@ public class ScheduledTask {
 
   @Scheduled(fixedRateString = "${spring.schedule.period}")
   public void checkCommandExpiration() {
-    System.out.println("Scheduled task: " + LocalDateTime.now());
     commandRepository.setStatusFailedIfCommandWasExpired(LocalDateTime.now());
   }
 }
