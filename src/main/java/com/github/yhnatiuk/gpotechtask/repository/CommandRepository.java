@@ -15,10 +15,10 @@ public interface CommandRepository extends CrudRepository<Command, Long> {
 
   String querySetStatusFailedIfCommandWasExpired = "UPDATE command "
       + "SET status = 'FAILED' "
-      + "WHERE expiration_time <= :expiration_date AND status = 'WAITING'";
+      + "WHERE expiration_time <= :expiration_date AND status = 'NEW'";
 
   String queryFindAppropriateCommand = "SELECT * FROM command "
-      + "WHERE data LIKE concat(:prefix, '%', :suffix) AND status = 'WAITING'";
+      + "WHERE data LIKE concat(:prefix, '%', :suffix) AND status = 'NEW'";
 
   @Modifying
   @Transactional

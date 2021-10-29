@@ -24,7 +24,7 @@ public class CommandServiceImpl implements CommandService {
   @Override
   public CommandDto addCommand(CommandDto commandDto) {
     commandDto.setExpirationDateTime(LocalDateTime.now().plusSeconds(30));
-    commandDto.setStatus(CommandStatus.WAITING);
+    commandDto.setStatus(CommandStatus.NEW);
     Command savedCommand = commandRepository.save(toDomain(commandDto));
     return toDto(savedCommand);
   }

@@ -17,7 +17,7 @@ public class CommandServiceTest extends AbstractTest {
     assertThat(allCommands.size(), equalTo(1));
     assertThat(allCommands.get(0).getId(), equalTo(addedCommand.getId()));
     assertThat("Command has wrong status", allCommands.get(0).getStatus(),
-        equalTo(CommandStatus.WAITING));
+        equalTo(CommandStatus.NEW));
     commandRepository.deleteAll();
   }
 
