@@ -1,7 +1,5 @@
 package com.github.yhnatiuk.gpotechtask.service.impl;
 
-import static java.util.Objects.isNull;
-
 import com.github.yhnatiuk.gpotechtask.service.AuthService;
 import com.github.yhnatiuk.gpotechtask.service.dto.UserDto;
 import java.util.HashMap;
@@ -28,10 +26,10 @@ public class KeyCloakAuthServiceImpl implements AuthService {
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-    MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
+    MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
     map.add("client_id", "my_client");
     map.add("username", user.getUsername());
-    map.add("password", user.getPassword());
+    map.add("password", user.getCredentials().getValue());
     map.add("grant_type", "password");
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
     try {
@@ -40,9 +38,22 @@ public class KeyCloakAuthServiceImpl implements AuthService {
       Map<String, String> res = new HashMap<>();
       res.put("token", response.getBody().getAccessToken());
       return res;
-    } catch (HttpClientErrorException ex){
+    } catch (HttpClientErrorException ex) {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Username or password is not correct.");
     }
+  }
+
+  @Override
+  public Object register(UserDto user) {
+    String realAdminToken = getRealmAdminToken();
+    return null;
+  }
+
+  private String getRealmAdminToken() {
+    UserDto admin = new UserDto();
+    admin.setUsername("admin");
+    admin.getCredentials().setValue("admin");
+    return login(admin).get("token");
   }
 }

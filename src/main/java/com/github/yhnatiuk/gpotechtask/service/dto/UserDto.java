@@ -1,8 +1,14 @@
 package com.github.yhnatiuk.gpotechtask.service.dto;
 
 public class UserDto {
+
   private String username;
-  private String password;
+  private String firstName;
+  private String lasName;
+  private String email;
+  private boolean enabled;
+  private boolean emailVerified;
+  private Credentials credentials;
 
   public String getUsername() {
     return username;
@@ -12,11 +18,51 @@ public class UserDto {
     this.username = username;
   }
 
-  public String getPassword() {
-    return password;
+  public boolean isEnabled() {
+    return enabled;
   }
 
-  public void setPassword(String password) {
-    this.password = password;
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
+
+  public Credentials getCredentials() {
+    return credentials;
+  }
+
+  public void setCredentials(Credentials credentials) {
+    this.credentials = credentials;
+  }
+
+  public String getFirstName() {
+    return firstName;
+  }
+
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+
+  public String getLasName() {
+    return lasName;
+  }
+
+  public void setLasName(String lasName) {
+    this.lasName = lasName;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public boolean isEmailVerified() {
+    return emailVerified;
+  }
+
+  public void setEmailVerified(boolean emailVerified) {
+    this.emailVerified = emailVerified;
   }
 }
