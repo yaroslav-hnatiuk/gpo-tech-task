@@ -1,5 +1,7 @@
 package com.github.yhnatiuk.gpotechtask.service.dto;
 
+import java.util.List;
+
 public class UserDto {
 
   private String username;
@@ -8,7 +10,7 @@ public class UserDto {
   private String email;
   private boolean enabled;
   private boolean emailVerified;
-  private Credentials credentials;
+  private List<Credentials> credentials;
 
   public String getUsername() {
     return username;
@@ -26,11 +28,11 @@ public class UserDto {
     this.enabled = enabled;
   }
 
-  public Credentials getCredentials() {
+  public List<Credentials> getCredentials() {
     return credentials;
   }
 
-  public void setCredentials(Credentials credentials) {
+  public void setCredentials(List<Credentials> credentials) {
     this.credentials = credentials;
   }
 

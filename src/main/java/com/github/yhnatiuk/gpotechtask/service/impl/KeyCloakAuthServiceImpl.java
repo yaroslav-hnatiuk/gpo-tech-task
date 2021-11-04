@@ -1,9 +1,12 @@
 package com.github.yhnatiuk.gpotechtask.service.impl;
 
 import com.github.yhnatiuk.gpotechtask.service.AuthService;
+import com.github.yhnatiuk.gpotechtask.service.dto.Credentials;
 import com.github.yhnatiuk.gpotechtask.service.dto.UserDto;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,7 +33,7 @@ public class KeyCloakAuthServiceImpl implements AuthService {
     MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
     map.add("client_id", "my_client");
     map.add("username", user.getUsername());
-    map.add("password", user.getCredentials().getValue());
+    map.add("password", user.getCredentials().get(0).getValue());
     map.add("grant_type", "password");
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
     try {
@@ -64,8 +67,11 @@ public class KeyCloakAuthServiceImpl implements AuthService {
 
   private String getRealmAdminToken() {
     UserDto admin = new UserDto();
+    List<Credentials> credentialsList = new ArrayList<>();
+    credentialsList.add(new Credentials());
+    admin.setCredentials(credentialsList);
     admin.setUsername("admin");
-    admin.getCredentials().setValue("admin");
+    admin.getCredentials().get(0).setValue("admin");
     return login(admin).get("token");
   }
 }

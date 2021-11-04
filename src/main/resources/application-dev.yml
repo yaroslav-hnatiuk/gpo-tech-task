@@ -23,5 +23,6 @@ logging:
   level:
     org.springframework: info
     org.hibernate: debug
+    logging.level.org.apache.http: debug
 server:
   port: 8080
