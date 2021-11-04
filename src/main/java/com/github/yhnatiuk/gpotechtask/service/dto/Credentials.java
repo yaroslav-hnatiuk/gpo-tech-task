@@ -3,7 +3,7 @@ package com.github.yhnatiuk.gpotechtask.service.dto;
 public class Credentials {
   private Type type;
   private String value;
-  private boolean isTemporary;
+  private boolean temporary;
 
   public Type getType() {
     return type;
@@ -22,10 +22,10 @@ public class Credentials {
   }
 
   public boolean isTemporary() {
-    return isTemporary;
+    return temporary;
   }
 
   public void setTemporary(boolean temporary) {
-    isTemporary = temporary;
+    this.temporary = temporary;
   }
 }

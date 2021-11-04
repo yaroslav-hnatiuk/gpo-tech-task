@@ -2,6 +2,7 @@ package com.github.yhnatiuk.gpotechtask.service.impl;
 
 import com.github.yhnatiuk.gpotechtask.service.AuthService;
 import com.github.yhnatiuk.gpotechtask.service.dto.UserDto;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpEntity;
@@ -45,8 +46,19 @@ public class KeyCloakAuthServiceImpl implements AuthService {
   }
 
   @Override
-  public Object register(UserDto user) {
-    String realAdminToken = getRealmAdminToken();
+  public UserDto register(UserDto user) {
+    String realmAdminToken = getRealmAdminToken();
+    UserDto registeredUser = registerNewUser(user, realmAdminToken);
+    return null;
+  }
+
+  private UserDto registerNewUser(UserDto user, String realmAdminToken) {
+    String registerUrl = "http://localhost:8484/auth/admin/realms/my_realm/users";
+    HttpEntity<UserDto> userDtoHttpEntity = new HttpEntity<>(user);
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<UserDto> aaa = restTemplate.postForEntity(URI.create(registerUrl), userDtoHttpEntity, UserDto.class);
+    HttpHeaders headers = new HttpHeaders();
+
     return null;
   }
 

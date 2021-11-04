@@ -4,7 +4,7 @@ public class UserDto {
 
   private String username;
   private String firstName;
-  private String lasName;
+  private String lastName;
   private String email;
   private boolean enabled;
   private boolean emailVerified;
@@ -42,12 +42,12 @@ public class UserDto {
     this.firstName = firstName;
   }
 
-  public String getLasName() {
-    return lasName;
+  public String getLastName() {
+    return lastName;
   }
 
-  public void setLasName(String lasName) {
-    this.lasName = lasName;
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
   }
 
   public String getEmail() {

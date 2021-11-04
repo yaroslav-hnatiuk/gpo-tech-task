@@ -7,6 +7,6 @@ public interface AuthService {
 
   Map<String, String> login(UserDto user);
 
-  Object register(UserDto user);
+  UserDto register(UserDto user);
 
 }
