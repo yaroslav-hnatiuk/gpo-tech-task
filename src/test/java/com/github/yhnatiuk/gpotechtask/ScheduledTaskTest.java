@@ -14,9 +14,13 @@ import java.util.concurrent.TimeUnit;
 import org.awaitility.Duration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 
 public class ScheduledTaskTest extends AbstractTest {
+
+  @Value("${spring.schedule.period}")
+  private String period;
 
   @SpyBean
   private ScheduledTask spyScheduledTask;
@@ -27,14 +31,14 @@ public class ScheduledTaskTest extends AbstractTest {
   @Test
   public void scheduledTaskRanSuccessfully() {
     await()
-        .timeout(new Duration(31000, TimeUnit.MILLISECONDS))
+        .timeout(new Duration(Long.parseLong(period), TimeUnit.MILLISECONDS))
         .untilAsserted(() -> verify(spyScheduledTask, atLeast(1)).checkCommandExpiration());
   }
 
   @Test
   public void commandSetStatusToFailedIn30SecsSuccessfully() throws InterruptedException {
     insertCommand(commandData);
-    Thread.sleep(31000);
+    Thread.sleep(Long.parseLong(period) + 100);
     realScheduledTask.checkCommandExpiration();
     List<CommandDto> allCommands = commandService.getAllCommands();
     assertThat(allCommands.size(), equalTo(1));
