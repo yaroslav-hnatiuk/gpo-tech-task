@@ -4,6 +4,7 @@ import java.util.List;
 
 public class UserDto {
 
+  private String id;
   private String username;
   private String firstName;
   private String lastName;
@@ -66,5 +67,13 @@ public class UserDto {
 
   public void setEmailVerified(boolean emailVerified) {
     this.emailVerified = emailVerified;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 }

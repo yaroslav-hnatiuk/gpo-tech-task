@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -57,10 +58,32 @@ public class KeyCloakAuthServiceImpl implements AuthService {
 
   private UserDto registerNewUser(UserDto user, String realmAdminToken) {
     String registerUrl = "http://localhost:8484/auth/admin/realms/my_realm/users";
-    HttpEntity<UserDto> userDtoHttpEntity = new HttpEntity<>(user);
-    RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<UserDto> aaa = restTemplate.postForEntity(URI.create(registerUrl), userDtoHttpEntity, UserDto.class);
+
     HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.set("Authorization", "Bearer " + realmAdminToken);
+    HttpEntity<UserDto> userDtoHttpEntity = new HttpEntity<>(user, headers);
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<UserDto> aaa = restTemplate.postForEntity(URI.create(registerUrl),
+        userDtoHttpEntity, UserDto.class);
+    String userId = getUserIdByEmailAndUserName(user.getEmail(), user.getUsername(),
+        realmAdminToken);
+    return null;
+  }
+
+  private String getUserIdByEmailAndUserName(String email, String username,
+      String realmAdminToken) {
+    var url = String.format(
+        "http://localhost:8484/auth/admin/realms/my_realm/users?email=%s&username=%s&exect=true",
+        email,
+        username);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.set("Authorization", "Bearer " + realmAdminToken);
+    HttpEntity<UserDto> userDtoHttpEntity = new HttpEntity<>(headers);
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<UserDto> aaa = restTemplate.exchange(url, HttpMethod.GET, userDtoHttpEntity,
+        UserDto.class);
 
     return null;
   }
