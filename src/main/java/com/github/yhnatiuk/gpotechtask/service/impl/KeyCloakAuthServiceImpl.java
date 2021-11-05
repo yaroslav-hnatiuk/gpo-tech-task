@@ -1,13 +1,21 @@
 package com.github.yhnatiuk.gpotechtask.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.github.yhnatiuk.gpotechtask.service.AuthService;
 import com.github.yhnatiuk.gpotechtask.service.dto.Credentials;
+import com.github.yhnatiuk.gpotechtask.service.dto.Role;
 import com.github.yhnatiuk.gpotechtask.service.dto.UserDto;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.github.yhnatiuk.gpotechtask.service.dto.UserRoleDto;
+import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -64,11 +72,33 @@ public class KeyCloakAuthServiceImpl implements AuthService {
     headers.set("Authorization", "Bearer " + realmAdminToken);
     HttpEntity<UserDto> userDtoHttpEntity = new HttpEntity<>(user, headers);
     RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<UserDto> aaa = restTemplate.postForEntity(URI.create(registerUrl),
-        userDtoHttpEntity, UserDto.class);
-    String userId = getUserIdByEmailAndUserName(user.getEmail(), user.getUsername(),
-        realmAdminToken);
-    return null;
+    ResponseEntity<UserRepresentation> response = restTemplate.postForEntity(URI.create(registerUrl),
+        userDtoHttpEntity, UserRepresentation.class);
+    if (response.getStatusCode().equals(HttpStatus.CREATED)) {
+      String userId = getUserIdByEmailAndUserName(user.getEmail(), user.getUsername(),
+              realmAdminToken);
+      setRoleToTheNewUser(userId, realmAdminToken);
+      return null;
+    } else {
+      throw new RuntimeException("");
+    }
+  }
+
+  private void setRoleToTheNewUser(String userId, String realmAdminToken) {
+    String setRoleUrl = "http://localhost:8484/auth/admin/realms/my_realm/users";
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.set("Authorization", "Bearer " + realmAdminToken);
+    List<RoleRepresentation> roles = new ArrayList<>();
+    RoleRepresentation roleRepresentation = new RoleRepresentation();
+    roleRepresentation.setName(Role.USER.name());
+    roleRepresentation.setId("96e92479-36ac-44ca-b2c1-2970d24152a1");
+    UserRoleDto userRole = new UserRoleDto(userId, roles);
+    HttpEntity<UserRoleDto> userDtoHttpEntity = new HttpEntity<>(userRole, headers);
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<String> response = restTemplate.postForEntity(URI.create(setRoleUrl),
+            userDtoHttpEntity, String.class);
+    System.out.println("!!!");
   }
 
   private String getUserIdByEmailAndUserName(String email, String username,
@@ -82,10 +112,9 @@ public class KeyCloakAuthServiceImpl implements AuthService {
     headers.set("Authorization", "Bearer " + realmAdminToken);
     HttpEntity<UserDto> userDtoHttpEntity = new HttpEntity<>(headers);
     RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<UserDto> aaa = restTemplate.exchange(url, HttpMethod.GET, userDtoHttpEntity,
-        UserDto.class);
-
-    return null;
+    ResponseEntity<UserRepresentation> aaa = restTemplate.exchange(url, HttpMethod.GET, userDtoHttpEntity,
+            UserRepresentation.class);
+    return aaa.getBody().getId();
   }
 
   private String getRealmAdminToken() {
