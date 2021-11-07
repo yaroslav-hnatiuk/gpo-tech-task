@@ -1,0 +1,34 @@
+keycloak:
+  realm: my_realm
+  url-login: http://localhost:8484/auth/realms/%s
+  url-admin: http://localhost:8484/auth/admin/realms/%s/users
+  username: admin
+  password: admin
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${KEYCLOAK_REALM_CERT_URL:http://localhost:8484/auth/realms/my_realm/protocol/openid-connect/certs}
+  schedule:
+    period: 3000
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://172.17.0.3:5432/postgres
+    username: postgres
+    password: mysecretpassword
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+  level:
+    org.springframework: info
+    org.hibernate: debug
+    org.apache.http: debug
+server:
+  port: 8080
