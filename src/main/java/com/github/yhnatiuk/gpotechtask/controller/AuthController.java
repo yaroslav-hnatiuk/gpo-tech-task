@@ -3,6 +3,7 @@ package com.github.yhnatiuk.gpotechtask.controller;
 import com.github.yhnatiuk.gpotechtask.service.AuthService;
 import com.github.yhnatiuk.gpotechtask.service.dto.UserDto;
 import java.util.Map;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +32,7 @@ public class AuthController {
   }
 
   @PostMapping(path = "/register")
-  public ResponseEntity<UserDto> register(@RequestBody UserDto user){
+  public ResponseEntity<UserRepresentation> register(@RequestBody UserDto user){
 
     return ResponseEntity.ok(authService.register(user));
   }

@@ -1,3 +1,9 @@
+keycloak:
+  realm: my_realm
+  url-login: http://localhost:8484/auth/realms/%s
+  url-admin: http://localhost:8484/auth/admin/realms/%s/users
+  username: admin
+  password: admin
 spring:
   security:
     oauth2:

@@ -1,8 +1,5 @@
 package com.github.yhnatiuk.gpotechtask.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.github.yhnatiuk.gpotechtask.service.AuthService;
 import com.github.yhnatiuk.gpotechtask.service.dto.Credentials;
 import com.github.yhnatiuk.gpotechtask.service.dto.Role;
@@ -12,10 +9,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.github.yhnatiuk.gpotechtask.service.dto.UserRoleDto;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -32,7 +28,20 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class KeyCloakAuthServiceImpl implements AuthService {
 
-  private String tokenUrl = "http://localhost:8484/auth/realms/my_realm/protocol/openid-connect/token";
+  @Value("${keycloak.realm}")
+  private String realm;
+
+  @Value("${keycloak.url-login}")
+  private String keycloakUrlLogin;
+
+  @Value("${keycloak.url-admin}")
+  private String keycloakUrlAdmin;
+
+  @Value("${keycloak.username}")
+  private String username;
+
+  @Value("${keycloak.password}")
+  private String password;
 
   @Override
   public Map<String, String> login(UserDto user) {
@@ -46,6 +55,7 @@ public class KeyCloakAuthServiceImpl implements AuthService {
     map.add("grant_type", "password");
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
     try {
+      String tokenUrl = String.format(keycloakUrlLogin + "/protocol/openid-connect/token", realm);
       ResponseEntity<KeycloakAuthResponse> response = restTemplate.postForEntity(
           tokenUrl, request, KeycloakAuthResponse.class);
       Map<String, String> res = new HashMap<>();
@@ -58,53 +68,74 @@ public class KeyCloakAuthServiceImpl implements AuthService {
   }
 
   @Override
-  public UserDto register(UserDto user) {
+  public UserRepresentation register(UserDto user) {
     String realmAdminToken = getRealmAdminToken();
-    UserDto registeredUser = registerNewUser(user, realmAdminToken);
-    return null;
+    return registerNewUser(user, realmAdminToken);
   }
 
-  private UserDto registerNewUser(UserDto user, String realmAdminToken) {
-    String registerUrl = "http://localhost:8484/auth/admin/realms/my_realm/users";
-
+  private UserRepresentation registerNewUser(UserDto user, String realmAdminToken) {
+    String registerUrl = String.format(keycloakUrlAdmin, realm);
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
     headers.set("Authorization", "Bearer " + realmAdminToken);
     HttpEntity<UserDto> userDtoHttpEntity = new HttpEntity<>(user, headers);
     RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<UserRepresentation> response = restTemplate.postForEntity(URI.create(registerUrl),
+    ResponseEntity<UserRepresentation> response = restTemplate.postForEntity(
+        URI.create(registerUrl),
         userDtoHttpEntity, UserRepresentation.class);
     if (response.getStatusCode().equals(HttpStatus.CREATED)) {
-      String userId = getUserIdByEmailAndUserName(user.getEmail(), user.getUsername(),
-              realmAdminToken);
-      setRoleToTheNewUser(userId, realmAdminToken);
-      return null;
+      UserRepresentation userRepresentation =
+          getUserIdByEmailAndUserName(user.getEmail(), user.getUsername(), realmAdminToken);
+      setRoleToTheNewUser(userRepresentation, realmAdminToken);
+      return getUserIdByEmailAndUserName(user.getEmail(), user.getUsername(), realmAdminToken);
     } else {
-      throw new RuntimeException("");
+      throw new RuntimeException("User was not created.");
     }
   }
 
-  private void setRoleToTheNewUser(String userId, String realmAdminToken) {
-    String setRoleUrl = "http://localhost:8484/auth/admin/realms/my_realm/users";
+  private void setRoleToTheNewUser(UserRepresentation user, String realmAdminToken) {
+    /*
+     * Add realm-level role mappings to the user
+     * POST /{realm}/users/{id}/role-mappings/realm
+     */
+    String setRoleUrl = String.format(keycloakUrlAdmin + "/%s/role-mappings/realm", realm, user.getId());
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
     headers.set("Authorization", "Bearer " + realmAdminToken);
-    List<RoleRepresentation> roles = new ArrayList<>();
-    RoleRepresentation roleRepresentation = new RoleRepresentation();
-    roleRepresentation.setName(Role.USER.name());
-    roleRepresentation.setId("96e92479-36ac-44ca-b2c1-2970d24152a1");
-    UserRoleDto userRole = new UserRoleDto(userId, roles);
-    HttpEntity<UserRoleDto> userDtoHttpEntity = new HttpEntity<>(userRole, headers);
-    RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<String> response = restTemplate.postForEntity(URI.create(setRoleUrl),
-            userDtoHttpEntity, String.class);
-    System.out.println("!!!");
+    List<RoleRepresentation> roles = getRolesThatCanBeMapped(user, realmAdminToken);
+    RoleRepresentation newUserRole = getRole(roles, Role.USER);
+    HttpEntity<List<RoleRepresentation>> userDtoHttpEntity = new HttpEntity<>(List.of(newUserRole), headers);
+    new RestTemplate().postForEntity(URI.create(setRoleUrl), userDtoHttpEntity, String.class);
   }
 
-  private String getUserIdByEmailAndUserName(String email, String username,
+  private RoleRepresentation getRole(List<RoleRepresentation> roles, Role role) {
+    return roles.stream()
+        .filter(r -> r.getName().equals(role.name()))
+        .findAny()
+        .orElse(null);
+  }
+
+  private List<RoleRepresentation> getRolesThatCanBeMapped(UserRepresentation userRepresentation,
       String realmAdminToken) {
-    var url = String.format(
-        "http://localhost:8484/auth/admin/realms/my_realm/users?email=%s&username=%s&exect=true",
+    String urlGetRoles = String.format(
+        keycloakUrlAdmin + "/%s/role-mappings/realm/available", realm,
+        userRepresentation.getId());
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.set("Authorization", "Bearer " + realmAdminToken);
+    HttpEntity<UserDto> userDtoHttpEntity = new HttpEntity<>(headers);
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<RoleRepresentation[]> response = restTemplate.exchange(urlGetRoles,
+        HttpMethod.GET,
+        userDtoHttpEntity,
+        RoleRepresentation[].class);
+    return List.of(response.getBody());
+  }
+
+  private UserRepresentation getUserIdByEmailAndUserName(String email, String username,
+      String realmAdminToken) {
+    var url = String.format(keycloakUrlAdmin + "?email=%s&username=%s&exect=true",
+        realm,
         email,
         username);
     HttpHeaders headers = new HttpHeaders();
@@ -112,9 +143,10 @@ public class KeyCloakAuthServiceImpl implements AuthService {
     headers.set("Authorization", "Bearer " + realmAdminToken);
     HttpEntity<UserDto> userDtoHttpEntity = new HttpEntity<>(headers);
     RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<UserRepresentation> aaa = restTemplate.exchange(url, HttpMethod.GET, userDtoHttpEntity,
-            UserRepresentation.class);
-    return aaa.getBody().getId();
+    ResponseEntity<UserRepresentation[]> response = restTemplate.exchange(url, HttpMethod.GET,
+        userDtoHttpEntity,
+        UserRepresentation[].class);
+    return response.getBody()[0];
   }
 
   private String getRealmAdminToken() {
@@ -122,8 +154,8 @@ public class KeyCloakAuthServiceImpl implements AuthService {
     List<Credentials> credentialsList = new ArrayList<>();
     credentialsList.add(new Credentials());
     admin.setCredentials(credentialsList);
-    admin.setUsername("admin");
-    admin.getCredentials().get(0).setValue("admin");
+    admin.setUsername(username);
+    admin.getCredentials().get(0).setValue(password);
     return login(admin).get("token");
   }
 }
